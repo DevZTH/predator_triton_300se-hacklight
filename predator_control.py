@@ -1,4 +1,6 @@
+#!/usr/bin/python
 import os
+from time import sleep
 
 EC_IO="/sys/kernel/debug/ec/ec0/io" 
 #EC_IO="/tmp/test"
@@ -49,7 +51,7 @@ def clamp(value, max):
         value=max
     return value
 
-
+#start led
 def start():
     if ec_read(3) == 1:
         ec_write(3,0x11)
@@ -59,24 +61,32 @@ def stop():
 
 def auto_cpufan():
     on = ec_read(CPUFAN_CR) & ~0b1100
-    on |= 0xC
+    on |= 0b0100
     ec_write(CPUFAN_CR, on)
 
 def auto_gpufan():
-    on = ec_read(GPUFAN_CR) & ~0b1100000
-    on |= 0b0100000
+    on = ec_read(GPUFAN_CR) & ~0b110000
+    on |= 0b010000
     ec_write(GPUFAN_CR, on)
 
 def manual_cpufan():
     on = ec_read(CPUFAN_CR) & ~0b1100
-    on |= 0x0b1100
-    on= 0x56
+    on |= 0b1100
     ec_write(CPUFAN_CR, on)
 
 def manual_gpufan():
-    on = ec_read(GPUFAN_CR) & ~0b1100000
+    on = ec_read(GPUFAN_CR) & ~0b110000
     on |= 0b0110000
-    on=0x70
+    ec_write(GPUFAN_CR, on)
+
+def turbo_cpufan():
+    on = ec_read(CPUFAN_CR) & ~0b1100
+    on |= 0b1000
+    ec_write(CPUFAN_CR, on)
+
+def turbo_gpufan():
+    on = ec_read(GPUFAN_CR) & ~0b110000
+    on |= 0b100000
     ec_write(GPUFAN_CR, on)
 
 
@@ -87,6 +97,20 @@ def set_cpufan(value):
 def set_gpufan(value):
     value = clamp(value,100)
     ec_write(GPUFAN_PWMR, value)
+
+
+def fan_auto():
+    auto_cpufan()
+    auto_gpufan()
+
+def fan_max():
+    turbo_cpufan()
+    turbo_gpufan()
+
+def fan_manual():
+    manual_cpufan()
+    manual_gpufan()
+
 
 def set_profile(value):
     profiles = [0,1,4,5]
@@ -109,13 +133,17 @@ def set_color(r,g,b,br=100):
 
 #default script
 if __name__ == "__main__":
-    set_color(256,256,128,25)
+    set_color(256,256,128,10)
+    start()
 
     manual_cpufan()
     manual_gpufan()
+    set_cpufan(100)
+    set_gpufan(100)
+    set_profile(0) # lowest
+    sleep(10)
     set_cpufan(0)
     set_gpufan(0)
 
-    set_profile(0) # lowest
 
-    start()
+    
