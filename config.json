@@ -1,0 +1,14 @@
+{
+  "fans": {
+    "cpu": 0,
+    "gpu": 0,
+    "mode": 2
+  },
+  "color": {
+    "r": 151,
+    "g": 152,
+    "b": 132,
+    "brightness": 40
+  },
+  "profile": 0
+}
